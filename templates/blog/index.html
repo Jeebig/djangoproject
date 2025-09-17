@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+    <h1>Welcome to the Blog</h1>
+    <p>This is the home page.</p>
+    <h2>{{ title }}</h2>
+    <h3>Func: {{ func }}</h3>
+    <h3>List: {{ myList }}</h3>
+
+    <ul>
+        {% for item in myList %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+
+    {% if user.is_authenticated %}
+        <p>User is authenticated</p>
+    {% else %}
+        <p>User is not authenticated</p>
+    {% endif %}
+
+</body>
+</html>
