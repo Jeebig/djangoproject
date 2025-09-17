@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'blog',
     'helloweb',
 ]
 
@@ -51,8 +52,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'DjangoProject.urls'
-
-TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 
 TEMPLATES = [
     {
