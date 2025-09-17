@@ -1,26 +1,24 @@
 {% extends 'blog/base.html' %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block main %}
+    <h1>Home</h1>
+    <p>Testing DTL</p>
+    <h2>{{title|truncatewords:1}}</h2>
+    <h3>Func: {{func|upper}}</h3>
+    <h3>List: {{myList}}</h3>
 
-{% block content %}
-<div class="content-section">
-    <h1>Welcome to My Blog</h1>
-    
-    {% if posts %}
-        <div class="posts">
-            {% for post in posts %}
-                <article class="post">
-                    <h2 class="post-title">{{ post.title }}</h2>
-                    <p class="post-date">Posted on {{ post.created_at|date:"F d, Y" }}</p>
-                    <div class="post-content">
-                        {{ post.content|linebreaks }}
-                    </div>
-                </article>
-                {% if not forloop.last %}<hr>{% endif %}
-            {% endfor %}
-        </div>
+    <ul>
+        {% for item in myList %}
+        <li>{{item}}</li>
+        {% endfor %}
+    </ul>
+
+    {% if user.is_authenticated %}
+        <p>Hello, {{ user.username }}</p>
     {% else %}
-        <p>No posts available yet.</p>
+        <p>Hello, guest!</p>
     {% endif %}
-</div>
+
+    <p>Now is {% now "d/m/y H:i:s" %}</p>
+
 {% endblock %}

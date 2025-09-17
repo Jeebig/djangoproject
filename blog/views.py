@@ -1,10 +1,14 @@
 from django.shortcuts import render
-from .models import Post
+
+
+def dummy():
+    return "Dummy"
+
 
 def index(request):
-    posts = Post.objects.all().order_by('-created_at')
-    return render(request, 'blog/index.html', {
-        'title': 'Blog Home',
-        'posts': posts,
-        'user': request.user,
-    })
+    context = {
+        'title': "Python DTL working!",
+        'func': dummy,
+        'myList': ['one', 'two', 'three']
+    }
+    return render(request, "blog/index.html", context=context)
