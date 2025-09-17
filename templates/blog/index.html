@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ title }}</title>
-</head>
-<body>
-    <h1>Welcome to the Blog</h1>
-    <p>This is the blog home page.</p>
-</body>
-</html>
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="content-section">
+    <h1>Welcome to My Blog</h1>
+    
+    {% if posts %}
+        <div class="posts">
+            {% for post in posts %}
+                <article class="post">
+                    <h2 class="post-title">{{ post.title }}</h2>
+                    <p class="post-date">Posted on {{ post.created_at|date:"F d, Y" }}</p>
+                    <div class="post-content">
+                        {{ post.content|linebreaks }}
+                    </div>
+                </article>
+                {% if not forloop.last %}<hr>{% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No posts available yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
