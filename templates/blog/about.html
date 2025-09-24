@@ -1,0 +1,17 @@
+{% extends 'blog/base.html' %}
+
+{% block main %}
+<div class="page-header">
+    <h1>About Us</h1>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <h2>About This Blog</h2>
+        <p>This blog is created to share knowledge and insights about various topics. Stay tuned for more updates!</p>
+
+        <hr>
+
+        <p><a href="{% url 'index' %}" class="btn btn-primary">Back to Home</a></p>
+    </div>
+</div>
+{% endblock %}

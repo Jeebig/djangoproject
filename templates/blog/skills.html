@@ -1,0 +1,80 @@
+{% extends 'blog/base.html' %}
+
+{% block main %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Professional Skills</h2>
+        <p>Here's an overview of my technical and professional capabilities:</p>
+
+        <!-- Programming Skills Section -->
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Programming Languages & Frameworks</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    {% for skill in programming_skills %}
+                    <div class="col-md-6">
+                        <div class="well well-sm">
+                            <h4>{{ skill.name }}</h4>
+                            <p><strong>Level:</strong>
+                                <span
+                                    class="label {% if skill.level == 'Advanced' %}label-success{% elif skill.level == 'Intermediate' %}label-warning{% else %}label-info{% endif %}">
+                                    {{ skill.level }}
+                                </span>
+                            </p>
+                            <p><strong>Experience:</strong> {{ skill.experience }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools & Technologies Section -->
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">Tools & Technologies</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    {% for tool in tools %}
+                    <div class="col-md-3">
+                        <span class="label label-default">{{ tool }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Soft Skills Section -->
+        <div class="panel panel-success">
+            <div class="panel-heading">
+                <h3 class="panel-title">Soft Skills</h3>
+            </div>
+            <div class="panel-body">
+                <ul class="list-group">
+                    {% for skill in soft_skills %}
+                    <li class="list-group-item">
+                        <span class="glyphicon glyphicon-ok"></span> {{ skill }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="well">
+            <h3>Explore More</h3>
+            <p><a href="{% url 'my-works' %}" class="btn btn-primary">View My Projects</a></p>
+            <p><a href="{% url 'about-me' %}" class="btn btn-info">About Me</a></p>
+            <p><a href="{% url 'contact-me' %}" class="btn btn-success">Contact Me</a></p>
+            <p><a href="{% url 'index' %}" class="btn btn-default">Back to Home</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

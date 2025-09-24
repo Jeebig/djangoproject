@@ -1,0 +1,30 @@
+{% extends 'blog/base.html' %}
+
+{% block main %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>My Favorite Projects</h2>
+        <p>These are some of my favorite works that I'm most proud of:</p>
+
+        {% for favorite in favorites %}
+        <div class="panel panel-success">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{ favorite }}</h3>
+            </div>
+            <div class="panel-body">
+                <p>This is one of my favorite projects because it showcases my skills and creativity.</p>
+                <p><strong>Why it's special:</strong> Innovation, clean code, user experience</p>
+                <p><strong>Achievement:</strong> Successfully delivered on time and exceeded expectations</p>
+            </div>
+        </div>
+        {% endfor %}
+
+        <p><a href="{% url 'my-works' %}" class="btn btn-info">View All Works</a></p>
+        <p><a href="{% url 'index' %}" class="btn btn-primary">Back to Home</a></p>
+    </div>
+</div>
+{% endblock %}
