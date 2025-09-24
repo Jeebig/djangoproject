@@ -52,7 +52,9 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'website.urls'
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 
-TEMPLATES = [
+from typing import Any
+
+TEMPLATES: list[dict[str, Any]] = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [TEMPLATE_DIR],
@@ -72,7 +74,9 @@ WSGI_APPLICATION = 'website.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
+from typing import Dict, Any
+
+DATABASES: Dict[str, Dict[str, Any]] = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
