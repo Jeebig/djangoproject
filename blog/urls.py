@@ -1,6 +1,5 @@
 from django.urls import path, re_path
 from . import views
-from django.contrib.auth.views import LoginView
 
 app_name = 'blog'
 
@@ -17,8 +16,5 @@ urlpatterns = [
     re_path(r'^category/(?P<slug>[\w\-\u0100-\uFFFF]+)/$', views.category_posts, name='category-posts'),
     re_path(r'^tag/(?P<tag_name>[\w\-\u0100-\uFFFF\s]+)/$', views.tag_posts, name='tag-posts'),
     path('search/', views.search_posts, name='search'),
-    path('create-post/', views.create_post, name='add-post'),
-    path('login/', LoginView.as_view(template_name='blog/login.html'), name='login'),
-    path('logout/', views.custom_logout, name='logout'),
-
+    path('create-post/', views.PostCreateView.as_view(), name='add-post'),
 ]

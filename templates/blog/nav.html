@@ -30,7 +30,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'blog:skills' %}">Skills</a>
                 </li>
-                {% if user.is_superuser %}
+                {% if user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'blog:add-post' %}">
                         <i class="bi bi-plus-circle"></i> Create Post
@@ -50,21 +50,33 @@
                         {% endif %}
                     </a>
                     <ul class="dropdown-menu">
-                        {% if user.is_superuser %}
                         <li><a class="dropdown-item" href="{% url 'blog:add-post' %}">
                             <i class="bi bi-plus-circle"></i> Создать пост
                         </a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                            <i class="bi bi-person"></i> Мой профиль
+                        </a></li>
+                        {% if user.is_superuser %}
                         <li><hr class="dropdown-divider"></li>
+                        <li><span class="dropdown-item-text text-muted">
+                            <i class="bi bi-shield-check"></i> Админ функции
+                        </span></li>
                         {% endif %}
-                        <li><a class="dropdown-item" href="{% url 'blog:logout' %}">
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
                             <i class="bi bi-box-arrow-right"></i> Выйти
                         </a></li>
                     </ul>
                 </li>
                 {% else %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'blog:login' %}">
+                    <a class="nav-link" href="{% url 'accounts:login' %}">
                         <i class="bi bi-box-arrow-in-right"></i> Войти
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'accounts:register' %}">
+                        <i class="bi bi-person-plus"></i> Регистрация
                     </a>
                 </li>
                 {% endif %}

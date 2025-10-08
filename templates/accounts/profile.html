@@ -1,0 +1,125 @@
+{% extends "accounts/base_profile.html" %}
+
+{% block content %}
+<div class="mt-4">
+    <h1>Профиль пользователя {{ profile_user.username }}</h1>
+    
+    <!-- User Info -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <img src="{{ profile_user.avatar|default:'https://www.gravatar.com/avatar/?d=mp&s=120' }}" 
+                         alt="Avatar" class="rounded-circle mb-3" width="120" height="120">
+                    <h4>{{ profile_user.get_full_name|default:profile_user.username }}</h4>
+                    <p class="text-muted">@{{ profile_user.username }}</p>
+                    
+                    {% if profile_user.is_superuser %}
+                        <span class="badge bg-warning text-dark">Администратор</span>
+                    {% endif %}
+                    {% if profile_user.is_staff %}
+                        <span class="badge bg-info">Модератор</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5>Статистика</h5>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h3 class="text-primary">{{ posts_count }}</h3>
+                            <small>Постов</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-primary">{{ comments_count }}</h3>
+                            <small>Комментариев</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Details -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5>Информация</h5>
+                    
+                    {% if profile_user.email %}
+                    <p><i class="bi bi-envelope"></i> {{ profile_user.email }}</p>
+                    {% endif %}
+                    
+                    {% if profile_user.phone %}
+                    <p><i class="bi bi-telephone"></i> {{ profile_user.phone }}</p>
+                    {% endif %}
+                    
+                    {% if profile_user.city %}
+                    <p><i class="bi bi-geo-alt"></i> {{ profile_user.city }}</p>
+                    {% endif %}
+                    
+                    {% if profile_user.birth_date %}
+                    <p><i class="bi bi-cake"></i> {{ profile_user.birth_date|date:"d.m.Y" }}</p>
+                    {% endif %}
+                    
+                    <p><i class="bi bi-calendar-event"></i> Зарегистрирован {{ profile_user.date_joined|date:"d.m.Y" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Posts and Comments -->
+        <div class="col-md-8">
+            <!-- Posts -->
+            <h4>Посты пользователя ({{ posts_count }})</h4>
+            
+            {% if user_posts %}
+                <div class="row">
+                    {% for post in user_posts %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <img src="{{ post.image }}" class="card-img-top" alt="{{ post.title }}" height="150">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <a href="{% url 'blog:post-detail-slug' slug=post.slug %}" class="text-decoration-none">
+                                            {{ post.title|truncatechars:50 }}
+                                        </a>
+                                    </h6>
+                                    <p class="card-text text-muted">
+                                        {{ post.content|truncatechars:80 }}
+                                    </p>
+                                    <small class="text-muted">
+                                        {{ post.created_at|date:"d.m.Y" }} • 
+                                        {{ post.comments.count }} комментариев
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Пользователь пока не создал ни одного поста.</p>
+            {% endif %}
+            
+            <!-- Comments -->
+            <h4 class="mt-4">Последние комментарии</h4>
+            
+            {% if user_comments %}
+                {% for comment in user_comments %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h6>
+                                <a href="{% url 'blog:post-detail-slug' slug=comment.post.slug %}" class="text-decoration-none">
+                                    {{ comment.post.title }}
+                                </a>
+                            </h6>
+                            <p class="mb-1">{{ comment.content|truncatechars:150 }}</p>
+                            <small class="text-muted">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Пользователь пока не оставил ни одного комментария.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

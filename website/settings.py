@@ -35,10 +35,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'helloweb',
     'blog',
     'crispy_forms',
     'crispy_bootstrap5',
+    'accounts',  # Включаем обратно
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -131,7 +131,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-LOGIN_URL = 'blog:login'
-LOGOUT_URL = 'blog:logout'
+LOGIN_URL = 'accounts:login'
+LOGOUT_URL = 'accounts:logout'
 LOGIN_REDIRECT_URL = 'blog:index'
 LOGOUT_REDIRECT_URL = 'blog:index'
+
+AUTH_USER_MODEL = 'accounts.User'

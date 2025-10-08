@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class HellowebConfig(AppConfig):
+class AccountsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'helloweb'
+    name = 'accounts'

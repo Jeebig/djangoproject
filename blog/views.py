@@ -2,11 +2,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpRequest, HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
-from typing import Any
-from django.contrib.auth import logout
+from typing import Any, Dict
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
 
-from blog.forms import PostForm
+from blog.forms import PostForm, CommentForm
 from .models import Category, Post, Comment, Tag
 
 
@@ -109,6 +111,22 @@ def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
     # Получаем комментарии используя обратную связь
     comments = Comment.objects.filter(post=post_obj, is_active=True).select_related('author').order_by('created_at')
     
+    # Обработка формы комментариев
+    comment_form = CommentForm()
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            comment_form = CommentForm(request.POST)
+            if comment_form.is_valid():
+                comment = comment_form.save(commit=False)
+                comment.post = post_obj
+                comment.author = request.user
+                comment.save()
+                # Перенаправляем на ту же страницу, чтобы избежать повторной отправки формы
+                return redirect('blog:post-detail-slug', slug=post_obj.slug)
+        else:
+            # Если пользователь не авторизован, перенаправляем на страницу входа
+            return redirect('accounts:login')
+    
     # Навигация между постами
     try:
         previous_post = Post.objects.filter(created_at__lt=post_obj.created_at).order_by('-created_at').first()
@@ -125,6 +143,7 @@ def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
         'post': post_obj,
         'tags': post_obj.tags.all(),
         'comments': comments,
+        'comment_form': comment_form,
         'previous_post': previous_post,
         'next_post': next_post,
     }
@@ -136,6 +155,22 @@ def post_detail_by_slug(request: HttpRequest, slug: str) -> HttpResponse:
     # Получаем комментарии используя обратную связь
     comments = Comment.objects.filter(post=post_obj, is_active=True).select_related('author').order_by('created_at')
     
+    # Обработка формы комментариев
+    comment_form = CommentForm()
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            comment_form = CommentForm(request.POST)
+            if comment_form.is_valid():
+                comment = comment_form.save(commit=False)
+                comment.post = post_obj
+                comment.author = request.user
+                comment.save()
+                # Перенаправляем на ту же страницу, чтобы избежать повторной отправки формы
+                return redirect('blog:post-detail-slug', slug=slug)
+        else:
+            # Если пользователь не авторизован, перенаправляем на страницу входа
+            return redirect('accounts:login')
+    
     # Навигация между постами
     try:
         previous_post = Post.objects.filter(created_at__lt=post_obj.created_at).order_by('-created_at').first()
@@ -152,6 +187,7 @@ def post_detail_by_slug(request: HttpRequest, slug: str) -> HttpResponse:
         'post': post_obj,
         'tags': post_obj.tags.all(),
         'comments': comments,
+        'comment_form': comment_form,
         'previous_post': previous_post,
         'next_post': next_post,
     }
@@ -236,42 +272,21 @@ def search_posts(request: HttpRequest) -> HttpResponse:
     context.update(get_categories())
     return render(request, 'blog/search_results.html', context)
 
+# @login_required
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/create.html'
+    success_url = reverse_lazy('blog:index')
 
-def create_post(request: HttpRequest) -> HttpResponse:
-    # Проверяем, что пользователь авторизован и является администратором
-    if not request.user.is_authenticated:
-        # Если не авторизован - перенаправляем на логин
-        return redirect('blog:login')
-    
-    if not request.user.is_superuser:
-        # Если не админ - показываем ошибку доступа
-        context = {
-            'title': 'Доступ запрещен',
-            'error_message': 'Только администраторы могут создавать посты.',
-            'user': request.user
-        }
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.author = self.request.user
+        post.save()
+        form.save_m2m()
+        return super().form_valid(form)
+        
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
         context.update(get_categories())
-        return render(request, 'blog/access_denied.html', context)
-    
-    if request.method == 'POST':
-        formCreate = PostForm(request.POST)
-        if formCreate.is_valid():
-            formCreate.save()
-            return redirect('blog:index')
-    else:
-        formCreate = PostForm()
-    
-    context: dict[str, Any] = {
-        'formCreate': formCreate,
-    }
-    context.update(get_categories())
-    return render(request, 'blog/create.html', context)
-
-
-def custom_logout(request: HttpRequest) -> HttpResponse:
-    """Кастомный logout view, который обрабатывает GET и POST запросы"""
-    logout(request)  # Всегда выходим
-    context = {
-        'title': 'Выход выполнен'
-    }
-    return render(request, 'blog/logout.html', context)
+        return context
