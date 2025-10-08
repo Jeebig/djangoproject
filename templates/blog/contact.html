@@ -24,7 +24,7 @@
         </div>
 
         <h3>Contact Form</h3>
-        <form method="post" action="{% url 'contact-me' %}">
+        <form method="post" action="{% url 'blog:contact-me' %}">
             {% csrf_token %}
             <div class="form-group">
                 <label for="name">Name:</label>
@@ -42,7 +42,7 @@
             <button type="submit" class="btn btn-primary">Send Message</button>
         </form>
 
-        <p><a href="{% url 'index' %}" class="btn btn-default">Back to Home</a></p>
+        <p><a href="{% url 'blog:index' %}" class="btn btn-default">Back to Home</a></p>
     </div>
 </div>
 {% endblock %}

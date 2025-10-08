@@ -1,0 +1,51 @@
+{% extends 'blog/base.html' %}
+
+{% block main %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">
+                <i class="bi bi-exclamation-triangle"></i> {{ title }}
+            </h4>
+            <p class="mb-0">{{ error_message }}</p>
+            <hr>
+            <p class="mb-0">
+                {% if user.is_authenticated %}
+                    Вы вошли как: <strong>{{ user.username }}</strong>
+                    {% if user.is_staff %}
+                        (персонал)
+                    {% endif %}
+                    {% if user.is_superuser %}
+                        (суперпользователь)
+                    {% endif %}
+                {% else %}
+                    Вы не авторизованы.
+                {% endif %}
+            </p>
+        </div>
+        
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Что делать?</h5>
+                <div class="d-grid gap-2 d-md-block">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'blog:login' %}" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Войти в систему
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'blog:index' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house"></i> На главную
+                    </a>
+                    
+                    {% if user.is_authenticated and not user.is_superuser %}
+                        <a href="{% url 'blog:contact-me' %}" class="btn btn-outline-info">
+                            <i class="bi bi-envelope"></i> Связаться с администратором
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

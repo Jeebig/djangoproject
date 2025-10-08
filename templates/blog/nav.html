@@ -1,43 +1,74 @@
-<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse"
-                data-target="#bs-example-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="{% url 'index' %}">My Blog</a>
-        </div>
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav">
-                <li>
-                    <a href="{% url 'index' %}">Home</a>
+        <a class="navbar-brand" href="{% url 'blog:index' %}">My Blog</a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" title="Toggle navigation" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            <span class="visually-hidden">Toggle navigation</span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blog:index' %}">Home</a>
                 </li>
-                <li>
-                    <a href="{% url 'about-me' %}">About Me</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blog:about-me' %}">About Me</a>
                 </li>
-                <li>
-                    <a href="{% url 'my-works' %}">My Works</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blog:my-works' %}">My Works</a>
                 </li>
-                <li>
-                    <a href="{% url 'favorite-works' %}">Favorite Works</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blog:favorite-works' %}">Favorite Works</a>
                 </li>
-                <li>
-                    <a href="{% url 'favorite-song' %}">Favorite Song</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blog:favorite-song' %}">Favorite Song</a>
                 </li>
-                <li>
-                    <a href="{% url 'contact-me' %}">Contact Me</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blog:contact-me' %}">Contact Me</a>
                 </li>
-                <li>
-                    <a href="{% url 'skills' %}">Skills</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blog:skills' %}">Skills</a>
                 </li>
+                {% if user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blog:add-post' %}">
+                        <i class="bi bi-plus-circle"></i> Create Post
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            
+            <!-- Auth buttons -->
+            <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle"></i> {{ user.username }}
+                        {% if user.is_superuser %}
+                            <span class="badge bg-warning text-dark ms-1">Admin</span>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% if user.is_superuser %}
+                        <li><a class="dropdown-item" href="{% url 'blog:add-post' %}">
+                            <i class="bi bi-plus-circle"></i> Создать пост
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        <li><a class="dropdown-item" href="{% url 'blog:logout' %}">
+                            <i class="bi bi-box-arrow-right"></i> Выйти
+                        </a></li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blog:login' %}">
+                        <i class="bi bi-box-arrow-in-right"></i> Войти
+                    </a>
+                </li>
+                {% endif %}
             </ul>
         </div>
-        <!-- /.navbar-collapse -->
     </div>
-    <!-- /.container -->
 </nav>
