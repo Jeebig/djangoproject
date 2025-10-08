@@ -16,11 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpRequest, HttpResponse
+from typing import List
+from django.urls.resolvers import URLPattern, URLResolver
 
-urlpatterns = [
+def favicon_view(request: HttpRequest) -> HttpResponse:
+    return HttpResponse(status=204)  # No Content
+
+urlpatterns: List[URLPattern | URLResolver] = [
     path('admin/', admin.site.urls),
     # path('', include('helloweb.urls')),
     path('', include('blog.urls')),
-
+    path('favicon.ico', favicon_view, name='favicon'),
+    
 
 ]

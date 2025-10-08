@@ -1,20 +1,31 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpRequest, HttpResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
+from typing import Any
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+
+from blog.forms import PostForm
+from .models import Category, Post, Comment, Tag
 
 
-def dummy():
-    return "Dummy"
-
-
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
+    posts = Post.objects.all().order_by('-created_at')
+    paginator = Paginator(posts, 3)  # Show 3 posts per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
-        'title': "Python DTL working!",
-        'func': dummy,
-        'myList': ['one', 'two', 'three']
+        'title': "Blog Home",
+        # Используем пагинированные посты
+        'posts': page_obj,
+        'page_obj': page_obj,
     }
+    context.update(get_categories())
     return render(request, "blog/index.html", context=context)
 
 
-def favorite_song(request):
+def favorite_song(request: HttpRequest) -> HttpResponse:
     context = {
         'song_line': "You made me a, you made me a believer, believer",
         'artist': "Imagine Dragons",
@@ -23,7 +34,7 @@ def favorite_song(request):
     return render(request, 'blog/favorite_song.html', context)
 
 
-def about_me(request):
+def about_me(request: HttpRequest) -> HttpResponse:
     context = {
         'title': "About Me",
         'name': "Your Name",
@@ -32,12 +43,12 @@ def about_me(request):
     return render(request, 'blog/about.html', context)
 
 
-def contact_me(request):
+def contact_me(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         # Обработка отправленной формы
         name = request.POST.get('name')
-        email = request.POST.get('email')
-        message = request.POST.get('message')
+        # email = request.POST.get('email')  # Можно использовать для отправки email
+        # message = request.POST.get('message')  # Можно сохранить в БД
         
         # Здесь можно добавить логику отправки email или сохранения в БД
         # Пока просто покажем сообщение об успехе
@@ -55,7 +66,7 @@ def contact_me(request):
     return render(request, 'blog/contact.html', context)
 
 
-def my_works(request):
+def my_works(request: HttpRequest) -> HttpResponse:
     context = {
         'title': "My Works",
         'works': ["Project 1", "Project 2", "Project 3"]
@@ -63,7 +74,7 @@ def my_works(request):
     return render(request, 'blog/my_works.html', context)
 
 
-def favorite_works(request):
+def favorite_works(request: HttpRequest) -> HttpResponse:
     context = {
         'title': "Favorite Works",
         'favorites': ["Favorite 1", "Favorite 2"]
@@ -71,7 +82,7 @@ def favorite_works(request):
     return render(request, 'blog/favorite_works.html', context)
 
 
-def skills(request):
+def skills(request: HttpRequest) -> HttpResponse:
     context = {
         'title': "My Skills",
         'programming_skills': [
@@ -87,77 +98,180 @@ def skills(request):
     return render(request, 'blog/skills.html', context)
 
 
-def admin(request):
-    # Note: This conflicts with Django's built-in admin
-    # Better to rename this to avoid conflicts
-    context = {
-        'title': "Admin Panel",
-        'message': "Custom admin page"
-    }
-    return render(request, 'blog/admin.html', context)
-
-
-def page_not_found(request, exception):
+def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:  # 404 handler
     return render(request, 'blog/404.html', status=404)
 
-def server_error(request):
+def server_error(request: HttpRequest) -> HttpResponse:  # 500 handler
     return render(request, 'blog/500.html', status=500)
 
-def about_view(request):
+def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
+    post_obj = get_object_or_404(Post.objects.select_related('author', 'category').prefetch_related('tags'), pk=pk)
+    # Получаем комментарии используя обратную связь
+    comments = Comment.objects.filter(post=post_obj, is_active=True).select_related('author').order_by('created_at')
+    
+    # Навигация между постами
+    try:
+        previous_post = Post.objects.filter(created_at__lt=post_obj.created_at).order_by('-created_at').first()
+    except Post.DoesNotExist:
+        previous_post = None
+    
+    try:
+        next_post = Post.objects.filter(created_at__gt=post_obj.created_at).order_by('created_at').first()
+    except Post.DoesNotExist:
+        next_post = None
+    
     context = {
-        'title': "About View",
-        'info': "This is an about view page"
+        'title': post_obj.title,
+        'post': post_obj,
+        'tags': post_obj.tags.all(),
+        'comments': comments,
+        'previous_post': previous_post,
+        'next_post': next_post,
     }
-    return render(request, 'blog/about_view.html', context)
-def contact_view(request):
-    context = {
-        'title': "Contact View",
-        'info': "This is a contact view page"
-    }
-    return render(request, 'blog/contact_view.html', context)
-def works_view(request):
-    context = {
-        'title': "Works View",
-        'info': "This is a works view page"
-    }
-    return render(request, 'blog/works_view.html', context)
-def favorite_works_view(request):
-    context = {
-        'title': "Favorite Works View",
-        'info': "This is a favorite works view page"
-    }
-    return render(request, 'blog/favorite_works_view.html', context)
-def favorite_song_view(request):
-    context = {
-        'title': "Favorite Song View",
-        'info': "This is a favorite song view page"
-    }
-    return render(request, 'blog/favorite_song_view.html', context)
-def index_view(request):
-    context = {
-        'title': "Index View",
-        'info': "This is an index view page"
-    }
-    return render(request, 'blog/index_view.html', context)
-def admin_view(request):
-    context = {
-        'title': "Admin View",
-        'info': "This is an admin view page"
-    }
-    return render(request, 'blog/admin_view.html', context)
-def custom_404_view(request, exception):
-    return render(request, 'blog/custom_404.html', status=404)
-def custom_500_view(request):
-    return render(request, 'blog/custom_500.html', status=500)
-def home(request):
-    context = {
-        'title': "Home",
-        'welcome_message': "Welcome to the Home Page"
-    }
-    return render(request, 'blog/home.html', context)
-def post(request):
-    context = {
-        'title': "Post",
-        'post_content': "This is a sample post content."
-    }
+    context.update(get_categories())
     return render(request, 'blog/post.html', context)
+
+def post_detail_by_slug(request: HttpRequest, slug: str) -> HttpResponse:
+    post_obj = get_object_or_404(Post.objects.select_related('author', 'category').prefetch_related('tags'), slug=slug)
+    # Получаем комментарии используя обратную связь
+    comments = Comment.objects.filter(post=post_obj, is_active=True).select_related('author').order_by('created_at')
+    
+    # Навигация между постами
+    try:
+        previous_post = Post.objects.filter(created_at__lt=post_obj.created_at).order_by('-created_at').first()
+    except Post.DoesNotExist:
+        previous_post = None
+    
+    try:
+        next_post = Post.objects.filter(created_at__gt=post_obj.created_at).order_by('created_at').first()
+    except Post.DoesNotExist:
+        next_post = None
+    
+    context = {
+        'title': post_obj.title,
+        'post': post_obj,
+        'tags': post_obj.tags.all(),
+        'comments': comments,
+        'previous_post': previous_post,
+        'next_post': next_post,
+    }
+    context.update(get_categories())
+    return render(request, 'blog/post.html', context)
+
+
+def get_categories():
+    all_categories = Category.objects.all()
+    half = all_categories.count() // 2
+    first_half = all_categories[:half]
+    second_half = all_categories[half:]
+    return {
+        'categories': all_categories,
+        'first_half': first_half, 
+        'second_half': second_half
+    }
+    
+
+from typing import Dict, Any
+
+def category_posts(request: HttpRequest, slug: str) -> HttpResponse:
+    category = get_object_or_404(Category, slug=slug)
+    posts = Post.objects.filter(category=category).select_related('author').prefetch_related('tags').order_by('-created_at')
+    
+    # Пагинация
+    paginator = Paginator(posts, 3)  # 3 поста на странице
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context: Dict[str, Any] = {
+        'title': f"Posts in {category.name}",
+        'category': category,
+        'posts': page_obj,
+        'page_obj': page_obj,
+    }
+    context.update(get_categories())
+    return render(request, 'blog/category_posts.html', context)
+
+def tag_posts(request: HttpRequest, tag_name: str) -> HttpResponse:
+    """Отображает посты с определенным тегом"""
+    tag = get_object_or_404(Tag, name=tag_name)
+    posts = Post.objects.filter(tags=tag).select_related('author', 'category').prefetch_related('tags').order_by('-created_at')
+    paginator = Paginator(posts, 5)  # Show 5 posts per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context: Dict[str, Any] = {
+        'title': f"Posts tagged with '{tag.name}'",
+        'tag': tag,
+        'posts': page_obj,
+        'page_obj': page_obj,
+    }
+    context.update(get_categories())
+    return render(request, 'blog/tag_posts.html', context)
+
+def search_posts(request: HttpRequest) -> HttpResponse:
+    """Поиск постов по заголовку и содержимому"""
+    query = request.GET.get('q', '').strip()
+    posts = []
+    
+    if query:
+        # Регистронезависимый поиск по заголовку и содержимому
+        posts = Post.objects.filter(
+            Q(title__icontains=query) | Q(content__icontains=query)
+        ).select_related('author', 'category').prefetch_related('tags').order_by('-created_at')
+        
+        # Пагинация результатов поиска
+        paginator = Paginator(posts, 5)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        posts = page_obj
+    else:
+        page_obj = None
+    
+    context: Dict[str, Any] = {
+        'title': f"Результаты поиска: '{query}'" if query else "Поиск",
+        'posts': posts,
+        'page_obj': page_obj,
+        'query': query,
+    }
+    context.update(get_categories())
+    return render(request, 'blog/search_results.html', context)
+
+
+def create_post(request: HttpRequest) -> HttpResponse:
+    # Проверяем, что пользователь авторизован и является администратором
+    if not request.user.is_authenticated:
+        # Если не авторизован - перенаправляем на логин
+        return redirect('blog:login')
+    
+    if not request.user.is_superuser:
+        # Если не админ - показываем ошибку доступа
+        context = {
+            'title': 'Доступ запрещен',
+            'error_message': 'Только администраторы могут создавать посты.',
+            'user': request.user
+        }
+        context.update(get_categories())
+        return render(request, 'blog/access_denied.html', context)
+    
+    if request.method == 'POST':
+        formCreate = PostForm(request.POST)
+        if formCreate.is_valid():
+            formCreate.save()
+            return redirect('blog:index')
+    else:
+        formCreate = PostForm()
+    
+    context: dict[str, Any] = {
+        'formCreate': formCreate,
+    }
+    context.update(get_categories())
+    return render(request, 'blog/create.html', context)
+
+
+def custom_logout(request: HttpRequest) -> HttpResponse:
+    """Кастомный logout view, который обрабатывает GET и POST запросы"""
+    logout(request)  # Всегда выходим
+    context = {
+        'title': 'Выход выполнен'
+    }
+    return render(request, 'blog/logout.html', context)
