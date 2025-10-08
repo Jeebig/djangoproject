@@ -2,7 +2,13 @@
 {% block main %}
 <article>
     <h1>{{ post.title }}</h1>
-    <p class="text-muted">Автор: {{ post.author.username }} • {{ post.created_at|date:"d.m.Y H:i" }} • Категорія: {{ post.category.name }}</p>
+    <p class="text-muted">
+        Автор: 
+        <a href="{% url 'accounts:profile-user' username=post.author.username %}" class="text-decoration-none">
+            {{ post.author.username }}
+        </a>
+         • {{ post.created_at|date:"d.m.Y H:i" }} • Категорія: {{ post.category.name }}
+    </p>
     {% if post.image %}
     <img class="img-responsive" src="{{ post.image }}" alt="{{ post.title }}">
     <hr>
@@ -13,28 +19,82 @@
     {% if tags %}
     <p><strong>Теги:</strong>
         {% for tag in tags %}
-        <a href="{% url 'blog:tag-posts' tag.name %}" class="label label-primary">{{ tag.name }}</a>
+        <a href="{% url 'blog:tag-posts' tag.name %}" class="badge bg-primary text-decoration-none">{{ tag.name }}</a>
         {% empty %}—
         {% endfor %}
     </p>
     {% endif %}
     <hr>
-    <section id="comments">
+    <div class="comment-section">
         <h3>Коментарі ({{ comments|length }})</h3>
         {% if comments %}
         {% for c in comments %}
-        <div class="media">
-            <div class="media-body">
-                <h5 class="media-heading">{{ c.author.username }} <small>{{ c.created_at|date:"d.m.Y H:i" }}</small>
-                </h5>
-                <p>{{ c.content }}</p>
+        <div class="comment-item">
+            <div class="d-flex">
+                <div class="flex-shrink-0">
+                    <img src="{{ c.author.avatar|default:'https://www.gravatar.com/avatar/?d=mp' }}" 
+                         alt="{{ c.author.username }}" 
+                         class="avatar-image rounded-circle" 
+                         width="40" height="40">
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h6 class="comment-author mb-1">
+                            <a href="{% url 'accounts:profile-user' username=c.author.username %}" class="text-decoration-none">
+                                {{ c.author.username }}
+                            </a>
+                        </h6>
+                        <small class="comment-date">{{ c.created_at|date:"d.m.Y H:i" }}</small>
+                    </div>
+                    <div class="comment-content">{{ c.content|linebreaks }}</div>
+                </div>
             </div>
         </div>
         {% endfor %}
         {% else %}
-        <p class="text-muted">Поки немає коментарів.</p>
+        <p class="text-muted">Поки немає коментарів. Станьте першим!</p>
         {% endif %}
-    </section>
+
+        <!-- Форма добавления комментария -->
+        {% if user.is_authenticated %}
+            <div class="comment-form">
+                <h4><i class="bi bi-chat-dots"></i> Добавить комментарий</h4>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ comment_form.content.label_tag }}
+                        {{ comment_form.content }}
+                        {% if comment_form.content.errors %}
+                            <div class="text-danger">
+                                {% for error in comment_form.content.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Отправить комментарий
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="login-prompt">
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Войдите в систему</strong>, чтобы оставить комментарий.
+                    <div class="mt-2">
+                        <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-primary me-2">
+                            <i class="bi bi-box-arrow-in-right"></i> Войти
+                        </a>
+                        <span class="text-muted">или</span>
+                        <a href="{% url 'accounts:register' %}" class="btn btn-sm btn-outline-secondary ms-2">
+                            <i class="bi bi-person-plus"></i> Зарегистрироваться
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
 
     <!-- Навигация между постами -->
     <hr>
@@ -43,16 +103,16 @@
             {% if previous_post %}
             <div class="post-navigation">
                 <p class="text-muted">← Предыдущий пост</p>
-                <h4><a href="{% url 'blog:post-detail-slug' previous_post.slug %}">{{ previous_post.title }}</a></h4>
+                <h4><a href="{% url 'blog:post-detail-slug' previous_post.slug %}" class="text-decoration-none">{{ previous_post.title }}</a></h4>
                 <p class="text-muted">{{ previous_post.created_at|date:"d.m.Y" }}</p>
             </div>
             {% endif %}
         </div>
-        <div class="col-md-6 text-right">
+        <div class="col-md-6 text-end">
             {% if next_post %}
             <div class="post-navigation">
                 <p class="text-muted">Следующий пост →</p>
-                <h4><a href="{% url 'blog:post-detail-slug' next_post.slug %}">{{ next_post.title }}</a></h4>
+                <h4><a href="{% url 'blog:post-detail-slug' next_post.slug %}" class="text-decoration-none">{{ next_post.title }}</a></h4>
                 <p class="text-muted">{{ next_post.created_at|date:"d.m.Y" }}</p>
             </div>
             {% endif %}
@@ -60,9 +120,9 @@
     </div>
 
     <!-- Кнопка "Все посты" -->
-    <div class="text-center" style="margin-top: 20px;">
-        <a href="{% url 'blog:index' %}" class="btn btn-default">
-            <span class="glyphicon glyphicon-list"></span> Все посты
+    <div class="text-center mt-4">
+        <a href="{% url 'blog:index' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-list"></i> Все посты
         </a>
     </div>
 </article>

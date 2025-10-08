@@ -1,0 +1,77 @@
+/* Стили для комментариев */
+.comment-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 30px;
+}
+
+.comment-item {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: box-shadow 0.3s ease;
+}
+
+.comment-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.comment-author {
+    font-weight: 600;
+    color: #495057;
+}
+
+.comment-date {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.comment-content {
+    margin-top: 8px;
+    line-height: 1.6;
+}
+
+.comment-form {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.comment-form textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.login-prompt {
+    text-align: center;
+    padding: 20px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.avatar-image {
+    border: 2px solid #dee2e6;
+    transition: border-color 0.3s ease;
+}
+
+.avatar-image:hover {
+    border-color: #007bff;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .comment-section {
+        padding: 15px;
+        margin-top: 20px;
+    }
+    
+    .comment-form {
+        padding: 15px;
+    }
+}

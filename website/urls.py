@@ -27,6 +27,7 @@ urlpatterns: List[URLPattern | URLResolver] = [
     path('admin/', admin.site.urls),
     # path('', include('helloweb.urls')),
     path('', include('blog.urls')),
+    path('accounts/', include('accounts.urls')),
     path('favicon.ico', favicon_view, name='favicon'),
     
 

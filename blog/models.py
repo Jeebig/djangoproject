@@ -1,7 +1,9 @@
 from typing import Any
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.text import slugify
+
+User = get_user_model()
 
 # Create your models here.
 class Category(models.Model):
@@ -39,7 +41,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Категорія")
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Автор")
-    image = models.URLField(default="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.twomonkeys.net%2Fblog%2F2018%2F11%2F12%2Fthe-post-im-posting-because-i-cant-post-posts&psig=AOvVaw32O_Nx5XTJiEJ5dz7GKQIc&ust=1759248213373000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCOi_pKis_o8DFQAAAAAdAAAAABAE", verbose_name="URL зображення")
+    image = models.URLField(default="https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=800&h=400&fit=crop&crop=center", verbose_name="URL зображення")
     tags = models.ManyToManyField('Tag', related_name='posts', blank=True, verbose_name='Теги')
 
     def __str__(self):
@@ -90,6 +92,4 @@ class Comment(models.Model):
         verbose_name = "Коментар"
         verbose_name_plural = "Коментарі"
         ordering = ['-created_at']
-
-
-
+    

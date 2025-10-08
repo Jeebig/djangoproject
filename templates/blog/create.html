@@ -1,28 +1,115 @@
 
 {% extends 'blog/base.html' %}
-{% load crispy_forms_tags %}
 
 {% block main %}
 <div class="mb-4">
-    <h1 class="display-4">Create New Post</h1>
+    <h1 class="display-4">Создать новый пост</h1>
 </div>
 <div class="row">
     <div class="col-md-12">
-        <h2>Add a New Blog Post</h2>
-        <p class="text-muted">Use the form below to create a new blog post:</p>
-
-        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
-            {% csrf_token %}
-            {{ formCreate|crispy }}
-            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                <button type="submit" class="btn btn-primary btn-lg me-md-2">
-                    <i class="bi bi-plus-circle"></i> Create Post
-                </button>
-                <a href="{% url 'blog:index' %}" class="btn btn-outline-secondary btn-lg">
-                    <i class="bi bi-arrow-left"></i> Back to Home
-                </a>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Добавить новый пост в блог</h2>
             </div>
-        </form>
+            <div class="card-body">
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Автор:</strong> {{ user.username }}
+                    {% if user.is_superuser %}
+                        <span class="badge bg-warning text-dark ms-2">Администратор</span>
+                    {% endif %}
+                </div>
+                
+                <p class="text-muted">Используйте форму ниже для создания нового поста в блоге:</p>
+
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    <strong>Ошибки в форме:</strong>
+                    {% for field, errors in form.errors.items %}
+                        <div><strong>{{ field }}:</strong>
+                        {% for error in errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.content.id_for_label }}" class="form-label">{{ form.content.label }}</label>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.content.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.category.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.tags.id_for_label }}" class="form-label">{{ form.tags.label }}</label>
+                        {{ form.tags }}
+                        {% if form.tags.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.tags.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Удерживайте Ctrl для выбора нескольких тегов</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.image.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <button type="submit" class="btn btn-primary btn-lg me-md-2">
+                            <i class="bi bi-plus-circle"></i> Создать пост
+                        </button>
+                        <a href="{% url 'blog:index' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-arrow-left"></i> Назад на главную
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
