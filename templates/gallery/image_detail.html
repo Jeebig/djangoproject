@@ -1,0 +1,61 @@
+{% extends 'blog/base.html' %}
+
+{% block main %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <img src="{{ image.image.url }}" class="card-img-top" alt="{{ image.title }}">
+                <div class="card-body">
+                    <h2 class="card-title">{{ image.title }}</h2>
+                    {% if image.description %}
+                        <p class="card-text">{{ image.description }}</p>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <small class="text-muted">
+                                Загружено пользователем 
+                                <a href="{% url 'accounts:profile-user' username=image.uploaded_by.username %}" class="text-decoration-none">
+                                    {{ image.uploaded_by.username }}
+                                </a>
+                                {{ image.uploaded_at|date:"d.m.Y в H:i" }}
+                            </small>
+                        </div>
+                        
+                        {% if user == image.uploaded_by %}
+                            <a href="{% url 'gallery:delete-image' image_id=image.pk %}" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-trash"></i> Удалить
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Информация</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Размер файла:</strong> {{ image.image.size|filesizeformat }}</p>
+                    <p><strong>Статус:</strong> 
+                        {% if image.is_public %}
+                            <span class="badge bg-success">Публичное</span>
+                        {% else %}
+                            <span class="badge bg-warning">Приватное</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <a href="{% url 'gallery:gallery-index' %}" class="btn btn-secondary w-100">
+                    <i class="bi bi-arrow-left"></i> Назад к галерее
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -17,18 +17,20 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpRequest, HttpResponse
-from typing import List
+from typing import List, Union
 from django.urls.resolvers import URLPattern, URLResolver
+
+from website import settings
+from django.conf.urls.static import static
 
 def favicon_view(request: HttpRequest) -> HttpResponse:
     return HttpResponse(status=204)  # No Content
 
-urlpatterns: List[URLPattern | URLResolver] = [
+urlpatterns: List[Union[URLPattern, URLResolver]] = [
     path('admin/', admin.site.urls),
     # path('', include('helloweb.urls')),
     path('', include('blog.urls')),
     path('accounts/', include('accounts.urls')),
     path('favicon.ico', favicon_view, name='favicon'),
-    
-
-]
+    path('gallery/', include('gallery.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

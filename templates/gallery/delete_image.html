@@ -1,0 +1,37 @@
+{% extends 'blog/base.html' %}
+
+{% block main %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Удаление изображения
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="{{ image.image.url }}" alt="{{ image.title }}" class="img-thumbnail" style="max-height: 200px;">
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Внимание!</strong> Вы действительно хотите удалить изображение "{{ image.title }}"?
+                        Это действие нельзя отменить.
+                    </div>
+                    
+                    <form method="post" class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        {% csrf_token %}
+                        <a href="{% url 'gallery:image-detail' image_id=image.pk %}" class="btn btn-secondary me-md-2">
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Удалить изображение
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

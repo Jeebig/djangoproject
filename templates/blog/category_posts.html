@@ -9,9 +9,44 @@
 </div>
 <div class="post-list">
     {% for post in posts %}
-    <div class="post-item">
-        <h2><a href="{% url 'blog:post-detail-slug' post.slug %}">{{ post.title }}</a></h2>
-        <p>by {{ post.author }} on {{ post.created_at }}</p>
+    <div class="post-item d-flex align-items-start gap-3 mb-3">
+    <div class="flex-shrink-0">
+            {% with images=post.images.all %}
+                {% if images and images|length > 1 %}
+                <div id="cat-{{ post.id }}-carousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for pimg in images %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <a href="{% url 'blog:post-detail-slug' post.slug %}">
+                                {% if pimg.thumbnail %}
+                                    <img src="{{ pimg.thumbnail.url }}" alt="{{ post.title }}" class="thumb-120 w-100" loading="lazy" decoding="async"/>
+                                {% else %}
+                                    <img src="{{ pimg.image.url }}" alt="{{ post.title }}" class="thumb-120 w-100" loading="lazy" decoding="async"/>
+                                {% endif %}
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                    {% with first_image=images|first %}
+                        <a href="{% url 'blog:post-detail-slug' post.slug %}">
+                        {% if first_image and first_image.thumbnail %}
+                            <img src="{{ first_image.thumbnail.url }}" alt="{{ post.title }}" class="thumb-120 w-100" loading="lazy" decoding="async"/>
+                        {% elif post.image %}
+                            <img src="{{ post.image }}" alt="{{ post.title }}" class="thumb-120 w-100" loading="lazy" decoding="async"/>
+                        {% else %}
+                            <img src="https://via.placeholder.com/120x80" alt="placeholder" class="thumb-120 w-100" loading="lazy" decoding="async"/>
+                        {% endif %}
+                        </a>
+                    {% endwith %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        <div>
+            <h2 class="h5 mb-1"><a href="{% url 'blog:post-detail-slug' post.slug %}">{{ post.title }}</a></h2>
+            <p class="mb-0 text-muted">by {{ post.author }} on {{ post.created_at|date:"F d, Y H:i" }}</p>
+        </div>
     </div>
     {% empty %}
     <p>No posts found in this category.</p>

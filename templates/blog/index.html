@@ -33,11 +33,7 @@
             <i class="bi bi-clock"></i> <small class="text-muted">Posted on {{ post.created_at|date:"F d, Y H:i" }}</small>
         </p>
         
-        {% if post.image %}
-        <img class="img-fluid mb-3" src="{{ post.image }}" alt="{{ post.title }}">
-        {% else %}
-        <img class="img-fluid mb-3" src="https://via.placeholder.com/900x300" alt="placeholder">
-        {% endif %}
+        {% include 'blog/_post_gallery.html' %}
         
         <p class="card-text">{{ post.content|truncatewords:30 }}</p>
         <a class="btn btn-primary" href="{% url 'blog:post-detail-slug' post.slug %}">

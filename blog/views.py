@@ -2,18 +2,27 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpRequest, HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
-from typing import Any, Dict
-from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
+ 
+from typing import Any, Dict, List, DefaultDict
+from collections import defaultdict
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
+from django.core.files.uploadedfile import UploadedFile
+from django.forms import BaseModelForm
 
 from blog.forms import PostForm, CommentForm
 from .models import Category, Post, Comment, Tag
 
 
 def index(request: HttpRequest) -> HttpResponse:
-    posts = Post.objects.all().order_by('-created_at')
+    posts = (
+        Post.objects.all()
+        .select_related('author', 'category')
+        .prefetch_related('images', 'tags')
+        .order_by('-created_at')
+    )
     paginator = Paginator(posts, 3)  # Show 3 posts per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -107,7 +116,9 @@ def server_error(request: HttpRequest) -> HttpResponse:  # 500 handler
     return render(request, 'blog/500.html', status=500)
 
 def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
-    post_obj = get_object_or_404(Post.objects.select_related('author', 'category').prefetch_related('tags'), pk=pk)
+    post_obj = get_object_or_404(
+        Post.objects.select_related('author', 'category').prefetch_related('tags', 'images'), pk=pk
+    )
     # Получаем комментарии используя обратную связь
     comments = Comment.objects.filter(post=post_obj, is_active=True).select_related('author').order_by('created_at')
     
@@ -151,7 +162,9 @@ def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
     return render(request, 'blog/post.html', context)
 
 def post_detail_by_slug(request: HttpRequest, slug: str) -> HttpResponse:
-    post_obj = get_object_or_404(Post.objects.select_related('author', 'category').prefetch_related('tags'), slug=slug)
+    post_obj = get_object_or_404(
+        Post.objects.select_related('author', 'category').prefetch_related('tags', 'images'), slug=slug
+    )
     # Получаем комментарии используя обратную связь
     comments = Comment.objects.filter(post=post_obj, is_active=True).select_related('author').order_by('created_at')
     
@@ -196,22 +209,33 @@ def post_detail_by_slug(request: HttpRequest, slug: str) -> HttpResponse:
 
 
 def get_categories():
-    all_categories = Category.objects.all()
-    half = all_categories.count() // 2
+    cache_key = 'blog:categories:splits'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+    all_categories = list(Category.objects.all())
+    half = len(all_categories) // 2
     first_half = all_categories[:half]
     second_half = all_categories[half:]
-    return {
+    data = {
         'categories': all_categories,
-        'first_half': first_half, 
-        'second_half': second_half
+        'first_half': first_half,
+        'second_half': second_half,
     }
+    cache.set(cache_key, data, 300)
+    return data
     
 
 from typing import Dict, Any
 
 def category_posts(request: HttpRequest, slug: str) -> HttpResponse:
     category = get_object_or_404(Category, slug=slug)
-    posts = Post.objects.filter(category=category).select_related('author').prefetch_related('tags').order_by('-created_at')
+    posts = (
+        Post.objects.filter(category=category)
+        .select_related('author')
+        .prefetch_related('tags', 'images')
+        .order_by('-created_at')
+    )
     
     # Пагинация
     paginator = Paginator(posts, 3)  # 3 поста на странице
@@ -230,7 +254,12 @@ def category_posts(request: HttpRequest, slug: str) -> HttpResponse:
 def tag_posts(request: HttpRequest, tag_name: str) -> HttpResponse:
     """Отображает посты с определенным тегом"""
     tag = get_object_or_404(Tag, name=tag_name)
-    posts = Post.objects.filter(tags=tag).select_related('author', 'category').prefetch_related('tags').order_by('-created_at')
+    posts = (
+        Post.objects.filter(tags=tag)
+        .select_related('author', 'category')
+        .prefetch_related('tags', 'images')
+        .order_by('-created_at')
+    )
     paginator = Paginator(posts, 5)  # Show 5 posts per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -251,9 +280,14 @@ def search_posts(request: HttpRequest) -> HttpResponse:
     
     if query:
         # Регистронезависимый поиск по заголовку и содержимому
-        posts = Post.objects.filter(
+        posts = (
+            Post.objects.filter(
             Q(title__icontains=query) | Q(content__icontains=query)
-        ).select_related('author', 'category').prefetch_related('tags').order_by('-created_at')
+        )
+        .select_related('author', 'category')
+        .prefetch_related('tags', 'images')
+        .order_by('-created_at')
+        )
         
         # Пагинация результатов поиска
         paginator = Paginator(posts, 5)
@@ -279,11 +313,34 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     template_name = 'blog/create.html'
     success_url = reverse_lazy('blog:index')
 
-    def form_valid(self, form):
+    def form_valid(self, form: BaseModelForm):
+        from .models import PostImage
         post = form.save(commit=False)
         post.author = self.request.user
         post.save()
         form.save_m2m()
+
+        # Обработка множественных загружаемых файлов изображений с учетом порядка
+        files: List[UploadedFile] = list(self.request.FILES.getlist('images'))
+        order_csv: str = self.request.POST.get('images_order', '')
+        if order_csv:
+            names: List[str] = [n for n in order_csv.split(',') if n]
+            name_to_files: DefaultDict[str, List[UploadedFile]] = defaultdict(list)
+            for f in files:
+                name_to_files[f.name].append(f)
+            ordered_files: List[UploadedFile] = []
+            for name in names:
+                lst = name_to_files.get(name)
+                if lst:
+                    ordered_files.append(lst.pop(0))
+            for lst in name_to_files.values():
+                ordered_files.extend(lst)
+        else:
+            ordered_files = files
+
+        for idx, f in enumerate(ordered_files):
+            PostImage.objects.create(post=post, image=f, order=idx)
+
         return super().form_valid(form)
         
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:

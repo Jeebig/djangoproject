@@ -1,7 +1,11 @@
 from typing import Any
+import io
+import os
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
+from django.core.files.base import ContentFile
+from PIL import Image as PILImage
 
 User = get_user_model()
 
@@ -38,7 +42,7 @@ class Post(models.Model):
     slug = models.SlugField(max_length=200, unique=True, db_index=True, verbose_name="URL")
     title = models.CharField(max_length=200 , verbose_name="Заголовок")
     content = models.TextField(verbose_name="Зміст")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Дата створення")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Категорія")
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Автор")
     image = models.URLField(default="https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=800&h=400&fit=crop&crop=center", verbose_name="URL зображення")
@@ -93,3 +97,70 @@ class Comment(models.Model):
         verbose_name_plural = "Коментарі"
         ordering = ['-created_at']
     
+
+class PostImage(models.Model):
+    """Дополнительные изображения для поста (файлы, порядок и подпись)."""
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images', verbose_name="Пост")
+    image = models.ImageField(upload_to='blog/posts/%Y/%m/%d/', verbose_name="Изображение")
+    thumbnail = models.ImageField(upload_to='blog/posts/thumbnails/%Y/%m/%d/', blank=True, null=True, verbose_name="Миниатюра")
+    caption = models.CharField(max_length=200, blank=True, verbose_name="Подпись")
+    order = models.PositiveIntegerField(default=0, verbose_name="Порядок")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Добавлено")
+
+    class Meta:
+        verbose_name = "Изображение поста"
+        verbose_name_plural = "Изображения поста"
+        ordering = ['order', 'id']
+        constraints = []
+        indexes = [
+            models.Index(fields=['post', 'order']),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.post.title} — {self.image.name}"
+
+    @property
+    def url(self) -> str:
+        try:
+            return self.image.url
+        except Exception:
+            return ""
+
+    def create_thumbnail(self, size: tuple[int, int] = (400, 400)) -> None:
+        """Создает миниатюру для изображения поста и сохраняет в поле thumbnail."""
+        if not self.image:
+            return
+
+        # Открываем оригинальное изображение
+        img = PILImage.open(self.image)
+
+        # Приводим к RGB, если необходимо
+        if img.mode in ("RGBA", "LA", "P"):
+            img = img.convert("RGB")
+
+        # Создаем миниатюру с сохранением пропорций
+        img.thumbnail(size, PILImage.Resampling.LANCZOS)
+
+        # Сохраняем миниатюру в память
+        thumb_io = io.BytesIO()
+        img.save(thumb_io, format="JPEG", quality=90)
+        thumb_io.seek(0)
+
+        # Имя файла миниатюры
+        base_name = os.path.basename(self.image.name)
+        thumb_name = f"thumb_{base_name}"
+        thumb_name = thumb_name.replace('.png', '.jpg').replace('.webp', '.jpg')
+
+        # Записываем в поле thumbnail (без сохранения модели)
+        self.thumbnail.save(thumb_name, ContentFile(thumb_io.read()), save=False)
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """Переопределяем save для автоматического создания миниатюры один раз."""
+        is_new = self.pk is None
+        # Сначала сохраняем, чтобы у файла был путь
+        super().save(*args, **kwargs)
+
+        # Создаем миниатюру, если есть оригинал и нет миниатюры или файл обновили
+        if self.image and (is_new or not self.thumbnail):
+            self.create_thumbnail()
+            super().save(update_fields=["thumbnail"]) 

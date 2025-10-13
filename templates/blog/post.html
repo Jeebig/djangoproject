@@ -9,10 +9,7 @@
         </a>
          • {{ post.created_at|date:"d.m.Y H:i" }} • Категорія: {{ post.category.name }}
     </p>
-    {% if post.image %}
-    <img class="img-responsive" src="{{ post.image }}" alt="{{ post.title }}">
-    <hr>
-    {% endif %}
+    {% include 'blog/_post_gallery.html' %}
     <div>
         {{ post.content|linebreaks }}
     </div>
