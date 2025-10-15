@@ -26,11 +26,15 @@
 </p>
 <p><span class="glyphicon glyphicon-time"></span> Posted on {{ post.created_at|date:"F d, Y H:i" }}</p>
 <hr>
-{% if post.image %}
-<img class="img-responsive" src="{{ post.image }}" alt="{{ post.title }}">
-{% else %}
-<img class="img-responsive" src="https://via.placeholder.com/900x300" alt="placeholder">
-{% endif %}
+{% with first_image=post.images.all|first %}
+    {% if first_image and first_image.thumbnail %}
+    <img class="img-responsive" src="{{ first_image.thumbnail.url }}" alt="{{ post.title }}" loading="lazy" decoding="async">
+    {% elif post.image %}
+    <img class="img-responsive" src="{{ post.image }}" alt="{{ post.title }}" loading="lazy" decoding="async">
+    {% else %}
+    <img class="img-responsive" src="https://via.placeholder.com/900x300" alt="placeholder" loading="lazy" decoding="async">
+    {% endif %}
+{% endwith %}
 <hr>
 
 <p>{{ post.content|truncatewords:30 }}</p>

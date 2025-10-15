@@ -1,0 +1,56 @@
+{# Reusable gallery for a Post: shows carousel if multiple images, single image otherwise, with sensible fallbacks #}
+{% with images=post.images.all %}
+  {% if images|length or post.image %}
+  <div id="post-{{ post.id }}-carousel" class="carousel slide mb-3 position-relative" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      {# Сначала показываем загруженные PostImage; активным будет первый #}
+      {% for pimg in images %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        {% if pimg.thumbnail %}
+        <img src="{{ pimg.thumbnail.url }}" class="d-block w-100" alt="{{ pimg.caption|default:post.title }}" loading="lazy" decoding="async">
+        {% else %}
+        <img src="{{ pimg.image.url }}" class="d-block w-100" alt="{{ pimg.caption|default:post.title }}" loading="lazy" decoding="async">
+        {% endif %}
+        {% if pimg.caption %}
+        <div class="carousel-caption d-none d-md-block">
+          <p>{{ pimg.caption }}</p>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {# Затем legacy post.image, если оно есть #}
+      {% if post.image %}
+      <div class="carousel-item {% if not images or images|length == 0 %}active{% endif %}">
+        <img src="{{ post.image }}" class="d-block w-100" alt="{{ post.title }}" loading="lazy" decoding="async" referrerpolicy="no-referrer"
+             onerror="this.onerror=null;this.src='https://via.placeholder.com/900x300';">
+      </div>
+      {% endif %}
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#post-{{ post.id }}-carousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#post-{{ post.id }}-carousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+    <span class="position-absolute top-0 end-0 m-2 badge bg-dark opacity-75">{{ images|length }}{% if post.image %}+1{% endif %}</span>
+  </div>
+  {% elif images and images|length == 1 %}
+    {% with pimg=images.0 %}
+      {% if pimg.thumbnail %}
+      <img class="img-fluid mb-3" src="{{ pimg.thumbnail.url }}" alt="{{ pimg.caption|default:post.title }}" loading="lazy" decoding="async">
+      {% else %}
+      <img class="img-fluid mb-3" src="{{ pimg.image.url }}" alt="{{ pimg.caption|default:post.title }}" loading="lazy" decoding="async">
+      {% endif %}
+    {% endwith %}
+  {% else %}
+    {% if post.image %}
+    <img class="img-fluid mb-3" src="{{ post.image }}" alt="{{ post.title }}" loading="lazy" decoding="async" referrerpolicy="no-referrer"
+      onerror="this.onerror=null;this.src='https://via.placeholder.com/900x300';">
+    {% else %}
+    <img class="img-fluid mb-3" src="https://via.placeholder.com/900x300" alt="placeholder" loading="lazy" decoding="async">
+    {% endif %}
+  {% endif %}
+{% endwith %}

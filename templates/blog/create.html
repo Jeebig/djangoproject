@@ -88,15 +88,15 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
+                        <label class="form-label">Изображения (файлы)</label>
+                        <input type="file" name="images" id="images" class="form-control" accept="image/*" multiple>
+                        <input type="hidden" name="images_order" id="images_order" value="">
+                        <div id="previews" class="row g-2 mt-2"></div>
+                        <div class="form-text">Выберите несколько изображений и, при желании, измените порядок перетаскиванием карточек ниже.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }} (опционально)</label>
                         {{ form.image }}
-                        {% if form.image.errors %}
-                            <div class="text-danger small">
-                                {% for error in form.image.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-start">
@@ -112,4 +112,79 @@
         </div>
     </div>
 </div>
+<script>
+(function() {
+    const input = document.getElementById('images');
+    const container = document.getElementById('previews');
+    const orderInput = document.getElementById('images_order');
+
+    function updateOrder() {
+        const names = Array.from(container.querySelectorAll('[data-name]')).map(el => el.getAttribute('data-name'));
+        orderInput.value = names.join(',');
+    }
+
+    function makeCard(file) {
+        const col = document.createElement('div');
+        col.className = 'col-6 col-md-3';
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.setAttribute('data-name', file.name);
+        card.draggable = true;
+        const img = document.createElement('img');
+        img.className = 'card-img-top';
+        img.style.height = '140px';
+        img.style.objectFit = 'cover';
+        img.alt = file.name;
+        img.src = URL.createObjectURL(file);
+        const body = document.createElement('div');
+        body.className = 'card-body p-2';
+        const cap = document.createElement('div');
+        cap.className = 'small text-truncate';
+        cap.title = file.name;
+        cap.textContent = file.name;
+        body.appendChild(cap);
+        card.appendChild(img);
+        card.appendChild(body);
+
+        card.addEventListener('dragstart', (e) => {
+            card.classList.add('opacity-50');
+            e.dataTransfer.setData('text/plain', file.name);
+        });
+        card.addEventListener('dragend', () => card.classList.remove('opacity-50'));
+        card.addEventListener('dragover', (e) => e.preventDefault());
+        card.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const fromName = e.dataTransfer.getData('text/plain');
+            const to = card;
+            if (!fromName || fromName === to.dataset.name) return;
+            const from = container.querySelector(`[data-name="${CSS.escape(fromName)}"]`);
+            if (!from) return;
+            const fromCol = from.parentElement;
+            const toCol = to.parentElement;
+            if (!fromCol || !toCol || fromCol === toCol) return;
+            const all = Array.from(container.children);
+            const fromIdx = all.indexOf(fromCol);
+            const toIdx = all.indexOf(toCol);
+            if (fromIdx < toIdx) {
+                container.insertBefore(fromCol, toCol.nextSibling);
+            } else {
+                container.insertBefore(fromCol, toCol);
+            }
+            updateOrder();
+        });
+
+        col.appendChild(card);
+        return col;
+    }
+
+    input?.addEventListener('change', function(e) {
+        container.innerHTML = '';
+        const files = Array.from(input.files || []);
+        files.forEach(file => {
+            container.appendChild(makeCard(file));
+        });
+        updateOrder();
+    });
+})();
+</script>
 {% endblock %}

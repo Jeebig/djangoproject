@@ -30,6 +30,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'blog:skills' %}">Skills</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'gallery:gallery-index' %}">
+                        <i class="bi bi-images"></i> Галерея
+                    </a>
+                </li>
                 {% if user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'blog:add-post' %}">
@@ -55,6 +60,12 @@
                         </a></li>
                         <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
                             <i class="bi bi-person"></i> Мой профиль
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="{% url 'accounts:notifications' %}">
+                            <span><i class="bi bi-bell"></i> Уведомления</span>
+                            {% if notifications_unread_count %}
+                              <span class="badge bg-danger ms-2">{{ notifications_unread_count }}</span>
+                            {% endif %}
                         </a></li>
                         {% if user.is_superuser %}
                         <li><hr class="dropdown-divider"></li>

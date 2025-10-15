@@ -28,15 +28,56 @@
                 <div class="card-body">
                     <h5>Статистика</h5>
                     <div class="row text-center">
-                        <div class="col-6">
+                        <div class="col-3">
                             <h3 class="text-primary">{{ posts_count }}</h3>
                             <small>Постов</small>
                         </div>
-                        <div class="col-6">
+                        <div class="col-3">
                             <h3 class="text-primary">{{ comments_count }}</h3>
                             <small>Комментариев</small>
                         </div>
+                        <div class="col-3">
+                            <a href="{% url 'accounts:followers' username=profile_user.username %}" class="text-decoration-none">
+                                <h3 class="text-success">{{ followers_count }}</h3>
+                                <small>Подписчиков</small>
+                            </a>
+                        </div>
+                        <div class="col-3">
+                            <a href="{% url 'accounts:following' username=profile_user.username %}" class="text-decoration-none">
+                                <h3 class="text-info">{{ following_count }}</h3>
+                                <small>Подписки</small>
+                            </a>
+                        </div>
                     </div>
+                    
+                    <!-- Follow/Unfollow Button -->
+                    {% if not is_own_profile and user.is_authenticated %}
+                        <div class="mt-3 text-center">
+                            <form method="post" action="{% url 'accounts:follow-toggle' username=profile_user.username %}">
+                                {% csrf_token %}
+                                {% if is_following %}
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="bi bi-person-dash"></i> Отписаться
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-person-plus"></i> Подписаться
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </div>
+                    {% elif not is_own_profile and not user.is_authenticated %}
+                        <div class="mt-3 text-center">
+                            <a class="btn btn-primary" href="{% url 'accounts:login' %}?next={% url 'accounts:profile-user' username=profile_user.username %}">
+                                <i class="bi bi-box-arrow-in-right"></i> Войти, чтобы подписаться
+                            </a>
+                            <div class="mt-2">
+                                <a class="btn btn-link" href="{% url 'accounts:register' %}?next={% url 'accounts:profile-user' username=profile_user.username %}">
+                                    Нет аккаунта? Зарегистрируйтесь
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             

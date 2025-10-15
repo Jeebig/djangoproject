@@ -1,0 +1,34 @@
+{% extends 'blog/base.html' %}
+{% block main %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Уведомления</h2>
+    <form method="post" action="{% url 'accounts:notifications-mark-read' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-outline-secondary">Отметить все как прочитанные</button>
+    </form>
+  </div>
+
+  {% if notifications %}
+    <ul class="list-group">
+      {% for n in notifications %}
+        <li class="list-group-item d-flex justify-content-between align-items-start {% if not n.is_read %}list-group-item-warning{% endif %}">
+          <div class="ms-2 me-auto">
+            <div class="fw-bold">{{ n.created_at|date:'d.m.Y H:i' }}</div>
+            {% if n.link %}
+              <a href="{{ n.link }}">{{ n.message }}</a>
+            {% else %}
+              {{ n.message }}
+            {% endif %}
+          </div>
+          {% if not n.is_read %}
+            <span class="badge bg-warning text-dark">New</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="alert alert-info">Пока нет уведомлений.</div>
+  {% endif %}
+</div>
+{% endblock %}
