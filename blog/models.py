@@ -9,7 +9,6 @@ from PIL import Image as PILImage
 
 User = get_user_model()
 
-# Create your models here.
 class Category(models.Model):
     slug = models.SlugField(max_length=100, unique=True, db_index=True, verbose_name="URL")
     name = models.CharField(max_length=100, unique=True, verbose_name="Назва категорії")
@@ -46,7 +45,7 @@ class Post(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Категорія")
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Автор")
     image = models.URLField(default="https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=800&h=400&fit=crop&crop=center", verbose_name="URL зображення")
-    tags = models.ManyToManyField('Tag', related_name='posts', blank=True, verbose_name='Теги')
+    tags = models.ManyToManyField('Tag', related_name='posts', blank=True, verbose_name='Теги')  # type: ignore[type-arg]
 
     def __str__(self):
         return self.title
