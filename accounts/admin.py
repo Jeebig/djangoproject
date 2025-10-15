@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Follow
+from .models import User, Follow, Notification
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -34,3 +34,12 @@ class FollowAdmin(admin.ModelAdmin):
             'fields': ('email', 'phone', 'city', 'birth_date', 'avatar')
         }),
     ]
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('recipient', 'message', 'is_read', 'created_at')
+    list_filter = ('is_read', 'created_at')
+    search_fields = ('recipient__username', 'message')
+    raw_id_fields = ('recipient',)
+    date_hierarchy = 'created_at'

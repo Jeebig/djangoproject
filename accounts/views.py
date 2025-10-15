@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
@@ -72,14 +73,14 @@ def profile_view(request: HttpRequest, username: Optional[str] = None) -> HttpRe
     following_count: int = user.get_following_count()  # type: ignore[attr-defined]
     is_following: bool = False
     following_ids: Set[int] = set()
-    
+
     if request.user.is_authenticated:
         # is current user following the profile user (only relevant if viewing others)
         if not is_own_profile:
             is_following = user.followers.filter(follower=request.user).exists()  # type: ignore[attr-defined]
         # build a set of ids current user is following for template checks
         current_user = cast(User, request.user)
-    following_ids = set(current_user.following.values_list('following__id', flat=True))  # type: ignore[attr-defined]
+        following_ids = set(current_user.following.values_list('following__id', flat=True))  # type: ignore[attr-defined]
     
     context: Dict[str, Any] = {
         'title': f'Профиль {user.get_full_name() or user.username}',
@@ -100,7 +101,9 @@ def profile_view(request: HttpRequest, username: Optional[str] = None) -> HttpRe
 def follow_toggle_view(request: HttpRequest, username: str) -> HttpResponse:
     """Переключение подписки на пользователя"""
     if not request.user.is_authenticated:
-        return redirect('accounts:login')
+        login_url = reverse('accounts:login')
+        next_url = reverse('accounts:profile-user', kwargs={'username': username})
+        return redirect(f"{login_url}?next={next_url}")
     
     if request.method != 'POST':
         return redirect('accounts:profile-user', username=username)
@@ -130,7 +133,11 @@ def notifications_view(request: HttpRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return redirect('accounts:login')
 
-    notifs = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+    # Вычитываем список и одновременно отмечаем непрочитанные как прочитанные
+    notifs_qs = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+    # сначала получим список, чтобы отрендерить уже обновлённые статусы
+    notifs = list(notifs_qs)
+    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
     context: Dict[str, Any] = {
         'title': 'Уведомления',
         'notifications': notifs,
@@ -155,7 +162,7 @@ def followers_view(request: HttpRequest, username: str) -> HttpResponse:
     following_ids: Set[int] = set()
     if request.user.is_authenticated:
         current_user = cast(User, request.user)
-    following_ids = set(current_user.following.values_list('following__id', flat=True))  # type: ignore[attr-defined]
+        following_ids = set(current_user.following.values_list('following__id', flat=True))  # type: ignore[attr-defined]
 
     context: Dict[str, Any] = {
         'title': f'Подписчики {user.username}',
@@ -175,7 +182,7 @@ def following_view(request: HttpRequest, username: str) -> HttpResponse:
     following_ids: Set[int] = set()
     if request.user.is_authenticated:
         current_user = cast(User, request.user)
-    following_ids = set(current_user.following.values_list('following__id', flat=True))  # type: ignore[attr-defined]
+        following_ids = set(current_user.following.values_list('following__id', flat=True))  # type: ignore[attr-defined]
 
     context: Dict[str, Any] = {
         'title': f'Подписки {user.username}',

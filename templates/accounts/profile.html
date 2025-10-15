@@ -66,6 +66,17 @@
                                 {% endif %}
                             </form>
                         </div>
+                    {% elif not is_own_profile and not user.is_authenticated %}
+                        <div class="mt-3 text-center">
+                            <a class="btn btn-primary" href="{% url 'accounts:login' %}?next={% url 'accounts:profile-user' username=profile_user.username %}">
+                                <i class="bi bi-box-arrow-in-right"></i> Войти, чтобы подписаться
+                            </a>
+                            <div class="mt-2">
+                                <a class="btn btn-link" href="{% url 'accounts:register' %}?next={% url 'accounts:profile-user' username=profile_user.username %}">
+                                    Нет аккаунта? Зарегистрируйтесь
+                                </a>
+                            </div>
+                        </div>
                     {% endif %}
                 </div>
             </div>
