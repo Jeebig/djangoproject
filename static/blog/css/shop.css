@@ -1,0 +1,7 @@
+/* Shop and Cart UI polish */
+.card-product img { object-fit: cover; height: 180px; }
+.cart-qty input[type="number"] { width: 90px; }
+.cart-summary { position: sticky; top: 90px; }
+.cart-empty { text-align: center; padding: 48px 16px; color: #6c757d; }
+.cart-empty .icon { font-size: 64px; opacity: .5; }
+.product-badges .price { font-weight: 600; }

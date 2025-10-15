@@ -1,6 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
 from .models import Post, Category, Tag, Comment, PostImage
 from django.utils.html import format_html
 

@@ -1,0 +1,10 @@
+{% extends 'blog/base.html' %}
+{% block main %}
+<div class="alert alert-success mt-3">
+  <h4 class="alert-heading">Заказ оформлен!</h4>
+  <p>Ваш заказ №{{ order.id }} успешно создан. Мы отправим подтверждение на {{ order.email }}.</p>
+  <hr>
+  <a class="btn btn-primary" href="{% url 'shop:product-list' %}">Вернуться к товарам</a>
+  <a class="btn btn-outline-secondary" href="{% url 'shop:cart' %}">Открыть корзину</a>
+{% endblock %}
+{% block sidebar %}{% endblock %}
