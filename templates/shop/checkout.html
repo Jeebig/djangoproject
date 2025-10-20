@@ -2,9 +2,46 @@
 {% block main %}
 <h2>Оформление заказа</h2>
 <form method="post">{% csrf_token %}
-  <div class="mb-3">
-    <label class="form-label">Email для подтверждения</label>
-    <input type="email" class="form-control" name="email" value="{{ request.user.email }}" required>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label" for="email">Email для подтверждения</label>
+      <input id="email" type="email" class="form-control" name="email" value="{{ request.user.email }}" required placeholder="you@example.com" title="Email для подтверждения">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="full_name">Полное имя</label>
+      <input id="full_name" type="text" class="form-control" name="full_name" value="{{ request.user.get_full_name }}" placeholder="Иван Иванов" title="Полное имя">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="city">Город</label>
+      <input id="city" type="text" class="form-control" name="city" placeholder="Киев" title="Город">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="country">Страна</label>
+      <input id="country" type="text" class="form-control" name="country" placeholder="Украина" title="Страна">
+    </div>
+    <div class="col-12">
+      <label class="form-label" for="address_line1">Адрес (строка 1)</label>
+      <input id="address_line1" type="text" class="form-control" name="address_line1" placeholder="ул. Шевченко, 1" title="Адрес (строка 1)">
+    </div>
+    <div class="col-12">
+      <label class="form-label" for="address_line2">Адрес (строка 2)</label>
+      <input id="address_line2" type="text" class="form-control" name="address_line2" placeholder="кв. 10" title="Адрес (строка 2)">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="postal_code">Индекс</label>
+      <input id="postal_code" type="text" class="form-control" name="postal_code" placeholder="01001" title="Индекс">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="phone">Телефон</label>
+      <input id="phone" type="text" class="form-control" name="phone" placeholder="+380XXXXXXXXX" title="Телефон">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="payment_method">Способ оплаты</label>
+      <select id="payment_method" name="payment_method" class="form-select" title="Способ оплаты">
+        <option value="cod">Наложенный платеж</option>
+        <option value="card">Карта</option>
+      </select>
+    </div>
   </div>
   <button class="btn btn-success" type="submit">Подтвердить заказ</button>
 </form>

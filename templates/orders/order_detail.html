@@ -1,0 +1,66 @@
+{% extends 'blog/base.html' %}
+{% block main %}
+<h2>Заказ #{{ order.id }}</h2>
+
+<div class="mb-3">
+  <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+  <small class="text-muted ms-2">от {{ order.created_at|date:"d.m.Y H:i" }}</small>
+  <div class="text-muted">Email: {{ order.email }}</div>
+</div>
+
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th>Товар</th>
+        <th class="text-end">Цена</th>
+        <th class="text-center">Кол-во</th>
+        <th class="text-end">Сумма</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for it in order.items.all %}
+      <tr>
+        <td>{{ it.product.name }}</td>
+        <td class="text-end">{{ it.price }} ₴</td>
+        <td class="text-center">{{ it.quantity }}</td>
+        <td class="text-end">{{ it.subtotal }} ₴</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="3" class="text-end">Итого:</th>
+        <th class="text-end">{{ order.total }} ₴</th>
+      </tr>
+    </tfoot>
+  </table>
+  </div>
+
+{% if order.shipping %}
+<div class="card mt-3">
+  <div class="card-header">Доставка</div>
+  <div class="card-body">
+    <div>{{ order.shipping.full_name }}</div>
+    <div>{{ order.shipping.address_line1 }} {{ order.shipping.address_line2 }}</div>
+    <div>{{ order.shipping.city }} {{ order.shipping.postal_code }}</div>
+    <div>{{ order.shipping.country }}</div>
+    {% if order.shipping.phone %}<div>Тел: {{ order.shipping.phone }}</div>{% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% if order.payment %}
+<div class="card mt-3">
+  <div class="card-header">Оплата</div>
+  <div class="card-body">
+    <div>Метод: {{ order.payment.get_method_display }}</div>
+    <div>Статус: {{ order.payment.get_status_display }}</div>
+    <div>Сумма: {{ order.payment.amount }} ₴</div>
+  </div>
+</div>
+{% endif %}
+
+<a class="btn btn-outline-secondary mt-3" href="{% url 'orders:list' %}">К списку заказов</a>
+{% endblock %}
+{% block sidebar %}{% endblock %}
