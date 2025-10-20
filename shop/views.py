@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
-from .models import Product, Order, OrderItem
+from .models import Product
+from orders.models import Order, OrderItem, ShippingAddress, Payment
 from decimal import Decimal
 
 
@@ -145,6 +146,28 @@ def checkout(request: HttpRequest) -> HttpResponse:
             qty = int(cart.get(int(p.pk), 0))
             if qty > 0:
                 OrderItem.objects.create(order=order, product=p, quantity=qty, price=p.price)
+        # Optional: simple shipping from posted fields (fallback to minimal data)
+        full_name = request.POST.get('full_name') or (cast(Any, request.user).get_full_name() if request.user.is_authenticated else '')
+        city = request.POST.get('city') or ''
+        address_line1 = request.POST.get('address_line1') or ''
+        address_line2 = request.POST.get('address_line2') or ''
+        postal_code = request.POST.get('postal_code') or ''
+        country = request.POST.get('country') or ''
+        phone = request.POST.get('phone') or ''
+        if city and address_line1:
+            ShippingAddress.objects.create(
+                order=order,
+                full_name=full_name or 'Без имени',
+                city=city,
+                address_line1=address_line1,
+                address_line2=address_line2,
+                postal_code=postal_code,
+                country=country,
+                phone=phone,
+            )
+        # Create payment record (pending)
+        method = request.POST.get('payment_method') or Payment.Method.COD
+        Payment.objects.create(order=order, method=method, status=Payment.Status.PENDING, amount=cast(Any, order).total)
         _save_cart(request.session, {})
         # Email confirmation (dev backend may print to console)
         try:

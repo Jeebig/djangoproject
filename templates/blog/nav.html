@@ -74,6 +74,9 @@
                         <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
                             <i class="bi bi-person"></i> Мой профиль
                         </a></li>
+                        <li><a class="dropdown-item" href="{% url 'orders:list' %}">
+                            <i class="bi bi-receipt"></i> Мои заказы
+                        </a></li>
                         <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="{% url 'accounts:notifications' %}">
                             <span><i class="bi bi-bell"></i> Уведомления</span>
                             {% if notifications_unread_count %}

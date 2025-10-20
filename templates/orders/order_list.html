@@ -1,0 +1,16 @@
+{% extends 'blog/base.html' %}
+{% block main %}
+<h2>Мои заказы</h2>
+{% if orders %}
+<div class="list-group">
+  {% for o in orders %}
+  <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{% url 'orders:detail' o.id %}">
+    <span>Заказ #{{ o.id }} — {{ o.created_at|date:"d.m.Y H:i" }}</span>
+    <span class="badge bg-secondary">{{ o.get_status_display }}</span>
+  </a>
+  {% endfor %}
+{% else %}
+  <div class="alert alert-info">У вас ещё нет заказов.</div>
+{% endif %}
+{% endblock %}
+{% block sidebar %}{% endblock %}
